@@ -1234,7 +1234,6 @@ span {
    margin-right: 1rem;
    cursor: pointer;
 }
-
 .my-listings .box-container{
    display: grid;
    grid-template-columns: repeat(3, 1fr);
