@@ -131,6 +131,7 @@ if(isset($_POST['delete'])){
       </div>
    </form>
 </div>
+
    <?php
          }
       }else{
