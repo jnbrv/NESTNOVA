@@ -149,53 +149,48 @@ include 'save_send.php';
 
 if(isset($_POST['h_search'])){
 
-   $h_location = $_POST['h_location'];
-   $h_location = filter_var($h_location, FILTER_SANITIZE_STRING);
-   $h_type = $_POST['h_type'];
-   $h_type = filter_var($h_type, FILTER_SANITIZE_STRING);
-   $h_offer = $_POST['h_offer'];
-   $h_offer = filter_var($h_offer, FILTER_SANITIZE_STRING);
-   $h_min = $_POST['h_min'];
-   $h_min = filter_var($h_min, FILTER_SANITIZE_STRING);
-   $h_max = $_POST['h_max'];
-   $h_max = filter_var($h_max, FILTER_SANITIZE_STRING);
+   $h_location = filter_var($_POST['h_location'], FILTER_SANITIZE_STRING);
+   $h_type = filter_var($_POST['h_type'], FILTER_SANITIZE_STRING);
+   $h_offer = filter_var($_POST['h_offer'], FILTER_SANITIZE_STRING);
+   $h_min = filter_var($_POST['h_min'], FILTER_VALIDATE_INT);
+   $h_max = filter_var($_POST['h_max'], FILTER_VALIDATE_INT);
 
-   $select_properties = $conn->prepare("SELECT * FROM `property` WHERE address LIKE '%{$h_location}%' AND type LIKE '%{$h_type}%' AND offer LIKE '%{$h_offer}%' AND price BETWEEN $h_min AND $h_max ORDER BY date DESC");
-   $select_properties->execute();
+   if ($h_min === false) $h_min = 0;
+   if ($h_max === false) $h_max = PHP_INT_MAX;
 
-}elseif(isset($_POST['filter_search'])){
+   $select_properties = $conn->prepare("SELECT * FROM `property` WHERE address LIKE ? AND type LIKE ? AND offer LIKE ? AND price BETWEEN ? AND ? ORDER BY date DESC");
+   $select_properties->execute(["%$h_location%", "%$h_type%", "%$h_offer%", $h_min, $h_max]);
 
-   $location = $_POST['location'];
-   $location = filter_var($location, FILTER_SANITIZE_STRING);
-   $type = $_POST['type'];
-   $type = filter_var($type, FILTER_SANITIZE_STRING);
-   $offer = $_POST['offer'];
-   $offer = filter_var($offer, FILTER_SANITIZE_STRING);
-   $min = $_POST['min'];
-   $min = filter_var($min, FILTER_SANITIZE_STRING);
-   $max = $_POST['max'];
-   $max = filter_var($max, FILTER_SANITIZE_STRING);
-   $status = $_POST['status'];
-   $status = filter_var($status, FILTER_SANITIZE_STRING);
-   $furnished = $_POST['furnished'];
-   $furnished = filter_var($furnished, FILTER_SANITIZE_STRING);
+} elseif(isset($_POST['filter_search'])){
 
-   $select_properties = $conn->prepare("SELECT * FROM `property` WHERE address LIKE '%{$location}%' AND type LIKE '%{$type}%' AND offer LIKE '%{$offer}%' AND status LIKE '%{$status}%' AND furnished LIKE '%{$furnished}%' AND price BETWEEN $min AND $max ORDER BY date DESC");
-   $select_properties->execute();
+   $location = filter_var($_POST['location'], FILTER_SANITIZE_STRING);
+   $type = filter_var($_POST['type'], FILTER_SANITIZE_STRING);
+   $offer = filter_var($_POST['offer'], FILTER_SANITIZE_STRING);
+   $min = filter_var($_POST['min'], FILTER_VALIDATE_INT);
+   $max = filter_var($_POST['max'], FILTER_VALIDATE_INT);
+   $status = filter_var($_POST['status'], FILTER_SANITIZE_STRING);
+   $furnished = filter_var($_POST['furnished'], FILTER_SANITIZE_STRING);
 
-   // Insert search query into searchHistory
-   if($user_id != ''){
+   if ($min === false) $min = 0;
+   if ($max === false) $max = PHP_INT_MAX;
+
+   $select_properties = $conn->prepare("SELECT * FROM `property` WHERE address LIKE ? AND type LIKE ? AND offer LIKE ? AND status LIKE ? AND furnished LIKE ? AND price BETWEEN ? AND ? ORDER BY date DESC");
+   $select_properties->execute(["%$location%", "%$type%", "%$offer%", "%$status%", "%$furnished%", $min, $max]);
+
+   // Insert search query into searchHistory (only if user is logged in)
+   if(!empty($user_id)){
       $insert_history = $conn->prepare("INSERT INTO searchHistory (userID, loc, offertype, propertyType, minBudget, maxBudget, status, furnished) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
       $insert_history->execute([$user_id, $location, $offer, $type, $min, $max, $status, $furnished]);
    }
 
-
-}else{
+} else {
    $select_properties = $conn->prepare("SELECT * FROM `property` ORDER BY date DESC LIMIT 6");
    $select_properties->execute();
 }
 
 ?>
+
+
 
 <!-- listings section starts  -->
 
