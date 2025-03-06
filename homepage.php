@@ -141,7 +141,7 @@ include 'save_send.php';
       $select_properties = $conn->prepare("SELECT * FROM `property` ORDER BY date DESC LIMIT 3");
       $select_properties->execute();
       
-      if($select_properties->rowCount() > 0){
+      if($select_properties->rowCount() > 2){
    ?>
    <div style="margin-top: 2rem; text-align:center; width: 100%; display: flex; justify-content: center;">
       <a href="allProperties.php" class="inline-btn">view all</a>
