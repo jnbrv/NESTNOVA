@@ -290,12 +290,23 @@ if(isset($_POST['h_search'])){
       </form>
       <?php
          }
-      }else{
-         echo '<p class="empty"><img src="images/house-icon.png" alt="" style="height: 150px"><br><br>No Results Found!</p>';
       }
       ?>
       
    </div>
+
+   <?php
+   // If no results are found, show the centered message with the image
+   if ($select_properties->rowCount() == 0) {
+      echo '<div class="no-properties" style="text-align:center; margin-top:20px;">
+               <p class="empty">
+                  <img src="images/house-icon.png" alt="" style="height: 150px"><br><br>
+                  No results found!
+                  <a href="allProperties.php" style="margin-top:1.5rem;" class="btn">Go Back</a>
+               </p>
+            </div>';
+   }
+   ?>
 
 </section>
 
