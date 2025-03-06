@@ -10,10 +10,9 @@ if(isset($_COOKIE['user_id'])){
 
 include 'save_send.php';
 
-// Get filter parameter
+// Get filter parameter from URL
 $offer = isset($_GET['offer']) ? $_GET['offer'] : '';
 
-// Modify query based on filter
 if ($offer == 'rent' || $offer == 'sale') {
    $select_properties = $conn->prepare("SELECT * FROM `property` WHERE offer = ? ORDER BY date DESC");
    $select_properties->execute([$offer]);
@@ -23,7 +22,6 @@ if ($offer == 'rent' || $offer == 'sale') {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,28 +30,20 @@ if ($offer == 'rent' || $offer == 'sale') {
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>All Properties</title>
 
-   <!-- font awesome cdn link  -->
+   <!-- Font Awesome & CSS -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
    <link rel="icon" type="image/png" href="images/icon.png">
-   <!-- custom css file link  -->
    <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
    
 <?php include 'user_header.php'; ?>
 
-<!-- all Properties section starts  -->
-
 <section class="listings">
-
-   <h1 class="heading">all Properties</h1>
+   <h1 class="heading">All Properties</h1>
 
    <div class="box-container">
       <?php
-         $total_images = 0;
-         $select_properties = $conn->prepare("SELECT * FROM `property` ORDER BY date DESC");
-         $select_properties->execute();
          if($select_properties->rowCount() > 0){
             while($fetch_property = $select_properties->fetch(PDO::FETCH_ASSOC)){
 
@@ -61,32 +51,10 @@ if ($offer == 'rent' || $offer == 'sale') {
             $select_user->execute([$fetch_property['user_id']]);
             $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
 
-            if(!empty($fetch_property['image_02'])){
-               $image_coutn_02 = 1;
-            }else{
-               $image_coutn_02 = 0;
-            }
-            if(!empty($fetch_property['image_03'])){
-               $image_coutn_03 = 1;
-            }else{
-               $image_coutn_03 = 0;
-            }
-            if(!empty($fetch_property['image_04'])){
-               $image_coutn_04 = 1;
-            }else{
-               $image_coutn_04 = 0;
-            }
-            if(!empty($fetch_property['image_05'])){
-               $image_coutn_05 = 1;
-            }else{
-               $image_coutn_05 = 0;
-            }
-
-            $total_images = (1 + $image_coutn_02 + $image_coutn_03 + $image_coutn_04 + $image_coutn_05);
+            $total_images = 1 + !empty($fetch_property['image_02']) + !empty($fetch_property['image_03']) + !empty($fetch_property['image_04']) + !empty($fetch_property['image_05']);
 
             $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? and user_id = ?");
             $select_saved->execute([$fetch_property['id'], $user_id]);
-
       ?>
       <form action="" method="POST">
          <div class="box">
@@ -98,23 +66,14 @@ if ($offer == 'rent' || $offer == 'sale') {
                </div>
             </div>
             <input type="hidden" name="property_id" value="<?= $fetch_property['id']; ?>">
-            <?php
-               if($select_saved->rowCount() > 0){
-            ?>
-            <button type="submit" name="save" class="save"><i class="fas fa-heart"></i><span>saved</span></button>
-            <?php
-               }else{ 
-            ?>
-            <button type="submit" name="save" class="save"><i class="far fa-heart"></i><span>save</span></button>
-            <?php
-               }
-            ?>
+            <button type="submit" name="save" class="save">
+               <i class="<?= $select_saved->rowCount() > 0 ? 'fas' : 'far'; ?> fa-heart"></i>
+               <span><?= $select_saved->rowCount() > 0 ? 'saved' : 'save'; ?></span>
+            </button>
             <div class="thumb">
                <p class="total-images"><i class="far fa-image"></i><span><?= $total_images; ?></span></p>
-               
                <img src="uploaded_files/<?= $fetch_property['image_01']; ?>" alt="">
             </div>
-            
          </div>
          <div class="box">
             <div class="price"><i class="fa-solid fa-peso-sign"></i><span><?= $fetch_property['price']; ?></span></div>
@@ -128,31 +87,22 @@ if ($offer == 'rent' || $offer == 'sale') {
                <p><i class="fas fa-maximize"></i><span><?= $fetch_property['carpet']; ?>sqft</span></p>
             </div>
             <div class="flex-btn">
-               <a href="viewProperty.php?get_id=<?= $fetch_property['id']; ?>" class="btn">view property</a>
+               <a href="viewProperty.php?get_id=<?= $fetch_property['id']; ?>" class="btn">View Property</a>
             </div>
          </div>
       </form>
       <?php
          }
-      }else{
-         echo '<p class="empty"><img src="images/house-icon.png" alt=""><br>No properties added yet. <br><a href="postProperty.php" style="margin-top:1.5rem; width: 28%;" class="btn">add new</a></p>';
+      } else {
+         echo '<p class="empty"><img src="images/house-icon.png" alt="" style="height: 150px"><br><br>No properties found. <br><a href="postProperty.php" style="margin-top:1.5rem;" class="btn">Add New</a></p>';
       }
       ?>
-      
    </div>
-
 </section>
 
-<!-- all properties section ends -->
-
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-
 <?php include 'footer.php'; ?>
-
-<!-- custom js file link  -->
 <script src="user_script.js"></script>
-
 <?php include 'message.php'; ?>
 
 </body>
